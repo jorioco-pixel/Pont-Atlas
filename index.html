@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pont Atlas</title>
+<link rel="manifest" href="data:application/json,{%22name%22:%22Pont%20Atlas%22,%22short_name%22:%22Pont%20Atlas%22,%22display%22:%22standalone%22,%22start_url%22:%22.%22,%22background_color%22:%22%23F5F1E8%22,%22theme_color%22:%22%231F3B4D%22}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F1E8;
+    --paper-raised:#FBF9F4;
+    --ink:#211F1B;
+    --ink-soft:#5B564C;
+    --line:#DDD5C4;
+    --primary:#1F3B4D;
+    --primary-soft:#2E5170;
+    --accent:#C08A3E;
+    --good:#4A7A5D;
+    --good-bg:#E7EFE7;
+    --risk:#B33F32;
+    --risk-bg:#F5E4E0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:3rem;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:0 1.1rem;}
+
+  header{
+    padding:2.4rem 1.1rem 1.6rem;
+    border-bottom:1px solid var(--line);
+  }
+  header .wrap{padding:0;}
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-optical-sizing:auto;
+    font-size:2.1rem;
+    margin:0 0 .25rem;
+    letter-spacing:-.01em;
+    color:var(--primary);
+  }
+  .subtitle{
+    color:var(--ink-soft);
+    font-size:.94rem;
+    max-width:38ch;
+    line-height:1.45;
+  }
+
+  section{padding:1.6rem 0;}
+  h2{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:1.25rem;
+    margin:0 0 .9rem;
+    color:var(--primary);
+  }
+
+  /* --- Chart hero --- */
+  .chart-card{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:1.3rem 1rem 1rem;
+  }
+  .legend{display:flex;gap:1.3rem;margin-bottom:.6rem;font-size:.82rem;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:.4rem;}
+  .swatch{width:14px;height:3px;border-radius:2px;display:inline-block;}
+  svg{width:100%;height:auto;display:block;}
+  .zero-line{stroke:var(--risk);stroke-dasharray:3 4;stroke-width:1;}
+  .axis-label{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:var(--ink-soft);}
+
+  /* --- Metrics --- */
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
+  .metric{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:.95rem 1rem;
+  }
+  .metric .label{font-size:.76rem;color:var(--ink-soft);margin-bottom:.35rem;}
+  .metric .value{
+    font-family:'Fraunces',serif;
+    font-size:1.5rem;
+    font-weight:600;
+    font-variant-numeric:tabular-nums;
+  }
+  .metric.status{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;}
+  .status-pill{
+    font-size:.82rem;font-weight:600;padding:.3rem .7rem;border-radius:99px;
+  }
+  .status-pill.ok{background:var(--good-bg);color:var(--good);}
+  .status-pill.risk{background:var(--risk-bg);color:var(--risk);}
+
+  /* --- Params (accordion) --- */
+  details{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:10px;
+    margin-bottom:.6rem;
+    overflow:hidden;
+  }
+  summary{
+    cursor:pointer;
+    padding:.85rem 1rem;
+    font-weight:600;
+    font-size:.92rem;
+    list-style:none;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  summary::-webkit-details-marker{display:none;}
+  summary::after{content:'+';font-family:'Fraunces',serif;font-size:1.2rem;color:var(--accent);}
+  details[open] summary::after{content:'–';}
+  .field-grid{padding:0 1rem 1rem;display:grid;grid-template-columns:1fr 1fr;gap:.7rem .8rem;}
+  .field{display:flex;flex-direction:column;gap:.3rem;}
+  .field.full{grid-column:1 / -1;}
+  .field label{font-size:.74rem;color:var(--ink-soft);}
+  .field input, .field select{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.88rem;
+    padding:.45rem .55rem;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#fff;
+    color:var(--ink);
+    width:100%;
+  }
+  .field input:focus, .field select:focus{outline:2px solid var(--primary-soft);outline-offset:1px;}
+
+  .budget-table{width:100%;border-collapse:collapse;font-size:.86rem;}
+  .budget-table th, .budget-table td{
+    text-align:right;padding:.5rem .4rem;border-bottom:1px solid var(--line);
+    font-variant-numeric:tabular-nums;
+  }
+  .budget-table th:first-child, .budget-table td:first-child{text-align:left;}
+  .budget-table thead th{color:var(--ink-soft);font-weight:600;font-size:.76rem;}
+  .date-select{margin-bottom:.7rem;}
+
+  footer{
+    padding:1.5rem 1.1rem 0;
+    font-size:.76rem;
+    color:var(--ink-soft);
+    line-height:1.5;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Pont Atlas</h1>
+    <div class="subtitle">Le capital tient-il jusqu'à 90&nbsp;ans, entre le départ et la pension&nbsp;? Deux hypothèses, un seul verdict.</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section id="chart-section">
+    <div class="chart-card">
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--primary)"></span>Central</span>
+        <span><span class="swatch" style="background:var(--accent)"></span>Prudent</span>
+      </div>
+      <svg id="chart" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+  </section>
+
+  <section id="metrics-section">
+    <h2>Résultats</h2>
+    <div class="metrics">
+      <div class="metric"><div class="label">Capital au départ</div><div class="value" id="m-depart">–</div></div>
+      <div class="metric"><div class="label">Point le plus bas</div><div class="value" id="m-min">–</div></div>
+      <div class="metric"><div class="label">Capital à 90&nbsp;ans (Central)</div><div class="value" id="m-final-c">–</div></div>
+      <div class="metric"><div class="label">Capital à 90&nbsp;ans (Prudent)</div><div class="value" id="m-final-p">–</div></div>
+      <div class="metric status">
+        <div class="label" style="margin:0">Scénario Prudent</div>
+        <div class="status-pill" id="status-pill">–</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="budget-section">
+    <h2>Budget mensuel à une date</h2>
+    <select class="date-select" id="budget-date"></select>
+    <table class="budget-table" id="budget-table">
+      <thead><tr><th>Poste</th><th>Central</th><th>Prudent</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="params-section">
+    <h2>Paramètres</h2>
+
+    <details open>
+      <summary>Départ &amp; horizon</summary>
+      <div class="field-grid">
+        <div class="field"><label>Date de départ</label><input type="month" id="p-depart" value="2033-12"></div>
+        <div class="field"><label>Date de naissance</label><input type="date" id="p-naissance" value="1977-02-04"></div>
+        <div class="field"><label>Mois chez les parents</label><input type="number" id="p-dureeParents" value="12"></div>
+        <div class="field"><label>Horizon (mois de simulation)</label><input type="number" id="p-horizon" value="420"></div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Vente du bien &amp; crédit</summary>
+      <div class="field-grid">
+        <div class="field"><label>Prix de vente net (€)</label><input type="number" id="p-prixVente" value="345000"></div>
+        <div class="field"><label>Solde restant dû au départ (€)</label><input type="number" id="p-soldeHypo" value="155995"></div>
+        <div class="field"><label>Taux annuel du crédit</label><input type="number" step="0.0001" id="p-tauxCredit" value="0.0344"></div>
+        <div class="field"><label>Frais d'agence (%)</label><input type="number" step="0.0001" id="p-fraisAgence" value="0.0363"></div>
+        <div class="field"><label>Indemnité de remploi (mois)</label><input type="number" id="p-indemniteMois" value="3"></div>
+        <div class="field"><label>Mainlevée (€)</label><input type="number" id="p-mainlevee" value="729"></div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Épargne &amp; installation</summary>
+      <div class="field-grid">
+        <div class="field"><label>Épargne au départ (€)</label><input type="number" id="p-epargne" value="110000"></div>
+        <div class="field"><label>Taux EUR / MAD</label><input type="number" step="0.01" id="p-eurMad" value="10.5"></div>
+        <div class="field"><label>Voiture (DH)</label><input type="number" id="p-voitureDH" value="200000"></div>
+        <div class="field"><label>Équipement base 2026 (DH)</label><input type="number" id="p-equipDH" value="28500"></div>
+        <div class="field full"><label>Équipement différé à l'emménagement</label>
+          <select id="p-equipDiffere"><option value="true" selected>Oui</option><option value="false">Non</option></select>
+        </div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Hypothèses macro — Central / Prudent</summary>
+      <div class="field-grid">
+        <div class="field"><label>Rendement placement — Central</label><input type="number" step="0.001" id="p-rendC" value="0.03"></div>
+        <div class="field"><label>Rendement placement — Prudent</label><input type="number" step="0.001" id="p-rendP" value="0.03"></div>
+        <div class="field"><label>Inflation coûts — Central</label><input type="number" step="0.001" id="p-inflC" value="0.02"></div>
+        <div class="field"><label>Inflation coûts — Prudent</label><input type="number" step="0.001" id="p-inflP" value="0.03"></div>
+        <div class="field"><label>Indexation loyers — Central</label><input type="number" step="0.001" id="p-idxLoyerC" value="0.025"></div>
+        <div class="field"><label>Indexation loyers — Prudent</label><input type="number" step="0.001" id="p-idxLoyerP" value="0.025"></div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Budget mensuel base 2026</summary>
+      <div class="field-grid">
+        <div class="field"><label>Alimentation (€)</label><input type="number" id="p-alimentation" value="260"></div>
+        <div class="field"><label>Sorties/rencontres (€)</label><input type="number" id="p-sorties" value="250"></div>
+        <div class="field"><label>Voiture — usage (€)</label><input type="number" id="p-voitureUsage" value="285"></div>
+        <div class="field"><label>Escapades (€)</label><input type="number" id="p-escapades" value="106"></div>
+        <div class="field"><label>Vêtements (€)</label><input type="number" id="p-vetements" value="51"></div>
+        <div class="field"><label>Belgique (€)</label><input type="number" id="p-belgique" value="38"></div>
+        <div class="field"><label>Cadeaux (€)</label><input type="number" id="p-cadeaux" value="40"></div>
+        <div class="field"><label>Santé — base (€)</label><input type="number" id="p-santeBase" value="74"></div>
+        <div class="field"><label>Loyer Phase 2 (€)</label><input type="number" id="p-loyerP2" value="714"></div>
+        <div class="field"><label>Charges + Ménage Phase 2 (€)</label><input type="number" id="p-chargesP2" value="143"></div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Santé (multiplicateur par âge) &amp; réduction sociale</summary>
+      <div class="field-grid">
+        <div class="field"><label>x Santé à 65 ans</label><input type="number" step="0.01" id="p-santeMult1" value="1.15"></div>
+        <div class="field"><label>x Santé à 75 ans</label><input type="number" step="0.01" id="p-santeMult2" value="1.5"></div>
+        <div class="field"><label>x Santé à 85 ans</label><input type="number" step="0.01" id="p-santeMult3" value="2.0"></div>
+        <div class="field"><label>Âge réduction sorties/escapades</label><input type="number" id="p-ageReduction" value="80"></div>
+        <div class="field full"><label>Facteur (0.5 = -50%)</label><input type="number" step="0.01" id="p-reductionSociale" value="0.5"></div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Bien locatif secondaire</summary>
+      <div class="field-grid">
+        <div class="field"><label>Loyer brut base 2026 (DH)</label><input type="number" id="p-temaraDH" value="3500"></div>
+        <div class="field"><label>Fraction louée en Phase 2</label><input type="number" step="0.01" id="p-temaraFraction" value="0.75"></div>
+        <div class="field"><label>Syndic base 2026 (DH/mois)</label><input type="number" id="p-temaraSyndic" value="100"></div>
+        <div class="field"><label>Taxe base 2026 (DH/an)</label><input type="number" id="p-temaraTaxe" value="2000"></div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Pension légale</summary>
+      <div class="field-grid">
+        <div class="field"><label>Brut base 2026, réel (€/mois)</label><input type="number" id="p-pensionBrut" value="2250"></div>
+        <div class="field"><label>Précompte non-résident (%)</label><input type="number" step="0.0001" id="p-precompte" value="0.1111"></div>
+        <div class="field"><label>Indexation belge pré-liquidation</label><input type="number" step="0.001" id="p-idxBelge" value="0.02"></div>
+        <div class="field full"><label>Date de liquidation (pension + 2e pilier)</label><input type="month" id="p-liquidation" value="2044-02"></div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Pension complémentaire (2e pilier)</summary>
+      <div class="field-grid">
+        <div class="field"><label>Réserve initiale (€)</label><input type="number" id="p-ethReserve" value="50166.01"></div>
+        <div class="field"><label>Prime annuelle (€)</label><input type="number" id="p-ethPrimeAn" value="5146.30"></div>
+        <div class="field"><label>Début des contributions</label><input type="month" id="p-ethDebut" value="2025-01"></div>
+        <div class="field"><label>Taux d'imposition départ anticipé</label><input type="number" step="0.001" id="p-ethTauxImpot" value="0.165"></div>
+        <div class="field full"><label>Prélèvements sociaux</label><input type="number" step="0.0001" id="p-ethPrelevSoc" value="0.0555"></div>
+      </div>
+    </details>
+
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    Simulation personnelle — capital = capital précédent × (1 + rendement/12) − coût net + pension, mois par mois, du départ à l'horizon fixé. Les deux scénarios (Central / Prudent) ne diffèrent que par les hypothèses macro ci-dessus. Outil privé, aucune donnée n'est envoyée nulle part — tout reste dans ce navigateur.
+  </div>
+</footer>
+
+<script>
+function midx(y, m) { return y * 12 + m; }
+function idxFn(base, rate, mfb) { return base * Math.pow(1 + rate, mfb / 12); }
+function monthLabel(t) {
+  const y = Math.floor((t - 1) / 12);
+  const m = t - y * 12;
+  return y + '-' + String(m).padStart(2, '0');
+}
+
+function readParams() {
+  const g = id => document.getElementById(id);
+  const [dy, dm] = g('p-depart').value.split('-').map(Number);
+  const [ny, nmo, nd] = g('p-naissance').value.split('-').map(Number);
+  const [ly, lm] = g('p-liquidation').value.split('-').map(Number);
+  const [ey, em] = g('p-ethDebut').value.split('-').map(Number);
+  return {
+    departY: dy, departM: dm,
+    naissanceY: ny, naissanceM: nmo,
+    dureeParents: +g('p-dureeParents').value,
+    horizonMois: +g('p-horizon').value,
+    prixVente: +g('p-prixVente').value,
+    soldeHypo: +g('p-soldeHypo').value,
+    tauxCredit: +g('p-tauxCredit').value,
+    fraisAgencePct: +g('p-fraisAgence').value,
+    indemniteMois: +g('p-indemniteMois').value,
+    mainlevee: +g('p-mainlevee').value,
+    epargne: +g('p-epargne').value,
+    eurMad: +g('p-eurMad').value,
+    voitureDH: +g('p-voitureDH').value,
+    equipDH: +g('p-equipDH').value,
+    equipDiffere: g('p-equipDiffere').value === 'true',
+    rendC: +g('p-rendC').value, rendP: +g('p-rendP').value,
+    inflC: +g('p-inflC').value, inflP: +g('p-inflP').value,
+    idxLoyerC: +g('p-idxLoyerC').value, idxLoyerP: +g('p-idxLoyerP').value,
+    alimentation: +g('p-alimentation').value,
+    sorties: +g('p-sorties').value,
+    voitureUsage: +g('p-voitureUsage').value,
+    escapades: +g('p-escapades').value,
+    vetements: +g('p-vetements').value,
+    belgique: +g('p-belgique').value,
+    cadeaux: +g('p-cadeaux').value,
+    santeBase: +g('p-santeBase').value,
+    loyerP2: +g('p-loyerP2').value,
+    chargesP2: +g('p-chargesP2').value,
+    santeMult1: +g('p-santeMult1').value,
+    santeMult2: +g('p-santeMult2').value,
+    santeMult3: +g('p-santeMult3').value,
+    ageReduction: +g('p-ageReduction').value,
+    reductionSociale: +g('p-reductionSociale').value,
+    temaraDH: +g('p-temaraDH').value,
+    temaraFractionP2: +g('p-temaraFraction').value,
+    temaraSyndic: +g('p-temaraSyndic').value,
+    temaraTaxeAn: +g('p-temaraTaxe').value,
+    pensionBrut: +g('p-pensionBrut').value,
+    precompte: +g('p-precompte').value,
+    idxBelge: +g('p-idxBelge').value,
+    liquidationY: ly, liquidationM: lm,
+    ethReserve: +g('p-ethReserve').value,
+    ethPrimeAn: +g('p-ethPrimeAn').value,
+    ethDebutY: ey, ethDebutM: em,
+    ethTauxImpot: +g('p-ethTauxImpot').value,
+    ethPrelevSoc: +g('p-ethPrelevSoc').value,
+  };
+}
+
+function computeCapitalPont(p) {
+  const netVente = p.prixVente - p.soldeHypo - p.prixVente * p.fraisAgencePct
+                   - p.soldeHypo * p.tauxCredit / 12 * p.indemniteMois - p.mainlevee;
+  const voitureEur = p.voitureDH / p.eurMad;
+  const equipEur = p.equipDiffere ? 0 : (p.equipDH / p.eurMad);
+  return netVente + p.epargne - voitureEur - equipEur;
+}
+
+function ethiasNet(p, rendement) {
+  const nContrib = midx(p.departY, p.departM) - midx(p.ethDebutY, p.ethDebutM);
+  const i = rendement / 12;
+  let reserve = p.ethReserve;
+  for (let k = 0; k < nContrib; k++) reserve = reserve * (1 + i) + p.ethPrimeAn / 12;
+  const nGel = midx(p.liquidationY, p.liquidationM) - midx(p.departY, p.departM);
+  for (let k = 0; k < nGel; k++) reserve = reserve * (1 + i);
+  return reserve * (1 - p.ethTauxImpot) * (1 - p.ethPrelevSoc);
+}
+
+function santeMultAt(t, p) {
+  if (t >= midx(p.naissanceY + 85, p.naissanceM)) return p.santeMult3;
+  if (t >= midx(p.naissanceY + 75, p.naissanceM)) return p.santeMult2;
+  if (t >= midx(p.naissanceY + 65, p.naissanceM)) return p.santeMult1;
+  return 1.0;
+}
+
+function monthlyBudget(p, t, scenario) {
+  const infl = scenario === 'C' ? p.inflC : p.inflP;
+  const idxLoyer = scenario === 'C' ? p.idxLoyerC : p.idxLoyerP;
+  const BASE = midx(2026, 1);
+  const mfb = t - BASE;
+  const A80 = midx(p.naissanceY + p.ageReduction, p.naissanceM);
+  const agdalIdx = midx(p.departY, p.departM) + p.dureeParents;
+  const fs = t >= A80 ? p.reductionSociale : 1.0;
+  const sm = santeMultAt(t, p);
+  const enPhase2 = t >= agdalIdx;
+
+  const lines = [
+    ['Alimentation', idxFn(p.alimentation, infl, mfb)],
+    ['Sorties/rencontres', idxFn(p.sorties, infl, mfb) * fs],
+    ['Voiture', idxFn(p.voitureUsage, infl, mfb)],
+    ['Escapades', idxFn(p.escapades, infl, mfb) * fs],
+    ['Santé', idxFn(p.santeBase, infl, mfb) * sm],
+    ['Vêtements', idxFn(p.vetements, infl, mfb)],
+    ['Belgique', idxFn(p.belgique, infl, mfb)],
+    ['Cadeaux', idxFn(p.cadeaux, infl, mfb)],
+  ];
+  if (enPhase2) {
+    lines.unshift(['Charges+Ménage', idxFn(p.chargesP2, infl, mfb)]);
+    lines.unshift(['Loyer', idxFn(p.loyerP2, idxLoyer, mfb)]);
+  }
+  return lines;
+}
+
+function simulate(p, scenario) {
+  const infl = scenario === 'C' ? p.inflC : p.inflP;
+  const rendement = scenario === 'C' ? p.rendC : p.rendP;
+  const idxLoyer = scenario === 'C' ? p.idxLoyerC : p.idxLoyerP;
+
+  const BASE = midx(2026, 1);
+  const depIdx = midx(p.departY, p.departM);
+  const agdalIdx = depIdx + p.dureeParents;
+  const liqIdx = midx(p.liquidationY, p.liquidationM);
+  const finIdx = depIdx + p.horizonMois;
+  const eth = ethiasNet(p, rendement);
+  const pensionNet2026 = p.pensionBrut * (1 - p.precompte);
+  const mfbLiq = liqIdx - BASE;
+  const pension2044 = idxFn(pensionNet2026, p.idxBelge, mfbLiq);
+  const A80 = midx(p.naissanceY + p.ageReduction, p.naissanceM);
+
+  let capital = computeCapitalPont(p);
+  const trace = [capital];
+  let t = depIdx;
+
+  while (t < finIdx) {
+    const mfb = t - BASE;
+    const fs = t >= A80 ? p.reductionSociale : 1.0;
+    const sm = santeMultAt(t, p);
+    const loyerTemaraBrut = idxFn(p.temaraDH, idxLoyer, mfb);
+    const chargesDH = idxFn(p.temaraSyndic, infl, mfb) + idxFn(p.temaraTaxeAn, infl, mfb) / 12;
+
+    let panier, revenu;
+    const enPhase2 = t >= agdalIdx;
+    if (!enPhase2) {
+      revenu = 0;
+      panier = idxFn(p.alimentation, infl, mfb) + idxFn(p.sorties, infl, mfb) * fs
+             + idxFn(p.voitureUsage, infl, mfb) + idxFn(p.escapades, infl, mfb) * fs
+             + idxFn(p.santeBase, infl, mfb) * sm + idxFn(p.vetements, infl, mfb)
+             + idxFn(p.belgique, infl, mfb) + idxFn(p.cadeaux, infl, mfb);
+    } else {
+      revenu = loyerTemaraBrut * p.temaraFractionP2;
+      panier = idxFn(p.loyerP2, idxLoyer, mfb) + idxFn(p.chargesP2, infl, mfb)
+             + idxFn(p.voitureUsage, infl, mfb) + idxFn(p.alimentation, infl, mfb)
+             + idxFn(p.santeBase, infl, mfb) * sm + idxFn(p.sorties, infl, mfb) * fs
+             + idxFn(p.escapades, infl, mfb) * fs + idxFn(p.vetements, infl, mfb)
+             + idxFn(p.belgique, infl, mfb) + idxFn(p.cadeaux, infl, mfb);
+    }
+    const temaraNet = (revenu - chargesDH) / p.eurMad;
+    const cout = panier - temaraNet;
+    const pension = t >= liqIdx ? idxFn(pension2044, infl, t - liqIdx) : 0;
+
+    capital = capital * (1 + rendement / 12) - cout + pension;
+    if (t === agdalIdx && p.equipDiffere) {
+      capital -= idxFn(p.equipDH, infl, mfb) / p.eurMad;
+    }
+    if (t === liqIdx) capital += eth;
+
+    trace.push(capital);
+    t++;
+  }
+  return trace;
+}
+
+function fmtEur(v) {
+  return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(v)) + ' €';
+}
+
+function drawChart(traceC, traceP) {
+  const svg = document.getElementById('chart');
+  const W = 600, H = 300, padL = 46, padR = 10, padT = 10, padB = 22;
+  const n = traceC.length;
+  const all = traceC.concat(traceP);
+  let min = Math.min(0, ...all), max = Math.max(...all);
+  const span = max - min || 1;
+  min -= span * 0.06; max += span * 0.08;
+
+  const x = i => padL + (i / (n - 1)) * (W - padL - padR);
+  const y = v => padT + (1 - (v - min) / (max - min)) * (H - padT - padB);
+
+  function path(trace) {
+    return trace.map((v, i) => (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
+  }
+
+  let svgContent = '';
+  // zero line
+  svgContent += `<line class="zero-line" x1="${padL}" y1="${y(0).toFixed(1)}" x2="${W-padR}" y2="${y(0).toFixed(1)}"/>`;
+  svgContent += `<text class="axis-label" x="${padL-4}" y="${y(0)+3}" text-anchor="end">0</text>`;
+  svgContent += `<text class="axis-label" x="${padL-4}" y="${y(max*0.95)+3}" text-anchor="end">${Math.round(max/1000)}k</text>`;
+  // year ticks every 5 years
+  for (let yr = 0; yr*60 < n; yr += 5) {
+    const i = yr * 12;
+    if (i >= n) break;
+    svgContent += `<text class="axis-label" x="${x(i).toFixed(1)}" y="${H-6}" text-anchor="middle">+${yr}a</text>`;
+  }
+  svgContent += `<path d="${path(traceP)}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
+  svgContent += `<path d="${path(traceC)}" fill="none" stroke="var(--primary)" stroke-width="2.3"/>`;
+  svg.innerHTML = svgContent;
+}
+
+function populateBudgetDates(p) {
+  const sel = document.getElementById('budget-date');
+  sel.innerHTML = '';
+  const depIdx = midx(p.departY, p.departM);
+  const offsets = [0, 12, 24, 60, 120, 180, 240];
+  offsets.forEach(off => {
+    if (off > p.horizonMois) return;
+    const t = depIdx + off;
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = (off === 0 ? "Au départ" : "+" + Math.round(off/12) + " ans") + " (" + monthLabel(t) + ")";
+    sel.appendChild(opt);
+  });
+}
+
+function renderBudgetTable(p) {
+  const t = +document.getElementById('budget-date').value;
+  const linesC = monthlyBudget(p, t, 'C');
+  const linesP = monthlyBudget(p, t, 'P');
+  const tbody = document.querySelector('#budget-table tbody');
+  tbody.innerHTML = '';
+  let totC = 0, totP = 0;
+  linesC.forEach((lc, i) => {
+    const lp = linesP[i];
+    totC += lc[1]; totP += lp[1];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${lc[0]}</td><td>${fmtEur(lc[1])}</td><td>${fmtEur(lp[1])}</td>`;
+    tbody.appendChild(tr);
+  });
+  const trTot = document.createElement('tr');
+  trTot.style.fontWeight = '600';
+  trTot.innerHTML = `<td>Total brut</td><td>${fmtEur(totC)}</td><td>${fmtEur(totP)}</td>`;
+  tbody.appendChild(trTot);
+}
+
+function render() {
+  const p = readParams();
+  const traceC = simulate(p, 'C');
+  const traceP = simulate(p, 'P');
+  drawChart(traceC, traceP);
+
+  document.getElementById('m-depart').textContent = fmtEur(traceC[0]);
+  const minP = Math.min(...traceP);
+  document.getElementById('m-min').textContent = fmtEur(minP);
+  document.getElementById('m-final-c').textContent = fmtEur(traceC[traceC.length - 1]);
+  document.getElementById('m-final-p').textContent = fmtEur(traceP[traceP.length - 1]);
+
+  const pill = document.getElementById('status-pill');
+  if (minP >= 0) {
+    pill.textContent = 'Viable';
+    pill.className = 'status-pill ok';
+  } else {
+    pill.textContent = 'À risque';
+    pill.className = 'status-pill risk';
+  }
+
+  populateBudgetDates(p);
+  renderBudgetTable(p);
+}
+
+document.addEventListener('input', render);
+document.getElementById('budget-date').addEventListener('change', () => renderBudgetTable(readParams()));
+render();
+</script>
+</body>
+</html>
