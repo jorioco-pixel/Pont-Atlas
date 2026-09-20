@@ -1,747 +1,273 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Pont Atlas</title>
-<link rel="manifest" href="data:application/json,{%22name%22:%22Pont%20Atlas%22,%22short_name%22:%22Pont%20Atlas%22,%22display%22:%22standalone%22,%22start_url%22:%22.%22,%22background_color%22:%22%23F5F1E8%22,%22theme_color%22:%22%231F3B4D%22}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --paper:#F5F1E8;
-    --paper-raised:#FBF9F4;
-    --ink:#211F1B;
-    --ink-soft:#5B564C;
-    --line:#DDD5C4;
-    --primary:#1F3B4D;
-    --primary-soft:#2E5170;
-    --accent:#C08A3E;
-    --good:#4A7A5D;
-    --good-bg:#E7EFE7;
-    --risk:#B33F32;
-    --risk-bg:#F5E4E0;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'IBM Plex Sans',sans-serif;
-    -webkit-font-smoothing:antialiased;
-    padding-bottom:3rem;
-  }
-  .wrap{max-width:640px;margin:0 auto;padding:0 1.1rem;}
-
-  header{
-    padding:2.4rem 1.1rem 1.6rem;
-    border-bottom:1px solid var(--line);
-  }
-  header .wrap{padding:0;}
-  h1{
-    font-family:'Fraunces',serif;
-    font-weight:600;
-    font-optical-sizing:auto;
-    font-size:2.1rem;
-    margin:0 0 .25rem;
-    letter-spacing:-.01em;
-    color:var(--primary);
-  }
-  .subtitle{
-    color:var(--ink-soft);
-    font-size:.94rem;
-    max-width:38ch;
-    line-height:1.45;
-  }
-
-  section{padding:1.6rem 0;}
-  h2{
-    font-family:'Fraunces',serif;
-    font-weight:500;
-    font-size:1.25rem;
-    margin:0 0 .9rem;
-    color:var(--primary);
-  }
-
-  /* --- Chart hero --- */
-  .chart-card{
-    background:var(--paper-raised);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:1.3rem 1rem 1rem;
-  }
-  .legend{display:flex;gap:1.3rem;margin-bottom:.6rem;font-size:.82rem;color:var(--ink-soft);}
-  .legend span{display:inline-flex;align-items:center;gap:.4rem;}
-  .swatch{width:14px;height:3px;border-radius:2px;display:inline-block;}
-  svg{width:100%;height:auto;display:block;}
-  .zero-line{stroke:var(--risk);stroke-dasharray:3 4;stroke-width:1;}
-  .axis-label{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:var(--ink-soft);}
-
-  /* --- Metrics --- */
-  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
-  .metric{
-    background:var(--paper-raised);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:.95rem 1rem;
-  }
-  .metric .label{font-size:.76rem;color:var(--ink-soft);margin-bottom:.35rem;}
-  .metric .value{
-    font-family:'Fraunces',serif;
-    font-size:1.5rem;
-    font-weight:600;
-    font-variant-numeric:tabular-nums;
-  }
-  .metric.status{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;}
-  .status-pill{
-    font-size:.82rem;font-weight:600;padding:.3rem .7rem;border-radius:99px;
-  }
-  .status-pill.ok{background:var(--good-bg);color:var(--good);}
-  .status-pill.risk{background:var(--risk-bg);color:var(--risk);}
-
-  /* --- Params (accordion) --- */
-  details{
-    background:var(--paper-raised);
-    border:1px solid var(--line);
-    border-radius:10px;
-    margin-bottom:.6rem;
-    overflow:hidden;
-  }
-  summary{
-    cursor:pointer;
-    padding:.85rem 1rem;
-    font-weight:600;
-    font-size:.92rem;
-    list-style:none;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-  }
-  summary::-webkit-details-marker{display:none;}
-  summary::after{content:'+';font-family:'Fraunces',serif;font-size:1.2rem;color:var(--accent);}
-  details[open] summary::after{content:'–';}
-  .field-grid{padding:0 1rem 1rem;display:grid;grid-template-columns:1fr 1fr;gap:.7rem .8rem;}
-  .field{display:flex;flex-direction:column;gap:.3rem;}
-  .field.full{grid-column:1 / -1;}
-  .field label{font-size:.74rem;color:var(--ink-soft);}
-  .field input, .field select{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:.88rem;
-    padding:.45rem .55rem;
-    border:1px solid var(--line);
-    border-radius:6px;
-    background:#fff;
-    color:var(--ink);
-    width:100%;
-  }
-  .field input:focus, .field select:focus{outline:2px solid var(--primary-soft);outline-offset:1px;}
-
-  .budget-table{width:100%;border-collapse:collapse;font-size:.86rem;}
-  .budget-table th, .budget-table td{
-    text-align:right;padding:.5rem .4rem;border-bottom:1px solid var(--line);
-    font-variant-numeric:tabular-nums;
-  }
-  .budget-table th:first-child, .budget-table td:first-child{text-align:left;}
-  .budget-table thead th{color:var(--ink-soft);font-weight:600;font-size:.76rem;}
-  .date-select{margin-bottom:.7rem;}
-
-  .backup-row{display:flex;gap:.6rem;flex-wrap:wrap;}
-  .btn{
-    font-family:'IBM Plex Sans',sans-serif;
-    font-size:.86rem;font-weight:600;
-    padding:.55rem 1rem;border-radius:8px;
-    border:1px solid var(--primary);
-    background:var(--primary);color:#fff;cursor:pointer;
-  }
-  .btn-secondary{background:var(--paper-raised);color:var(--primary);}
-  .backup-status{margin-top:.5rem;font-size:.78rem;color:var(--ink-soft);min-height:1.1em;}
-
-  footer{
-    padding:1.5rem 1.1rem 0;
-    font-size:.76rem;
-    color:var(--ink-soft);
-    line-height:1.5;
-  }
-</style>
-</head>
-<body>
-
-<header>
-  <div class="wrap">
-    <h1>Pont Atlas</h1>
-    <div class="subtitle">Le capital tient-il jusqu'à 90&nbsp;ans, entre le départ et la pension&nbsp;? Deux hypothèses, un seul verdict.</div>
-  </div>
-</header>
-
-<div class="wrap">
-
-  <section id="backup-section">
-    <div class="backup-row">
-      <button type="button" id="btn-export" class="btn">Exporter JSON</button>
-      <button type="button" id="btn-import" class="btn btn-secondary">Importer JSON</button>
-      <input type="file" id="import-file" accept="application/json" style="display:none">
-    </div>
-    <div class="backup-status" id="backup-status"></div>
-  </section>
-
-  <section id="chart-section">
-    <div class="chart-card">
-      <div class="legend">
-        <span><span class="swatch" style="background:var(--primary)"></span>Central</span>
-        <span><span class="swatch" style="background:var(--accent)"></span>Prudent</span>
-      </div>
-      <svg id="chart" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet"></svg>
-    </div>
-  </section>
-
-  <section id="metrics-section">
-    <h2>Résultats</h2>
-    <div class="metrics">
-      <div class="metric"><div class="label">Capital au départ</div><div class="value" id="m-depart">–</div></div>
-      <div class="metric"><div class="label">Point le plus bas</div><div class="value" id="m-min">–</div></div>
-      <div class="metric"><div class="label">Capital à 90&nbsp;ans (Central)</div><div class="value" id="m-final-c">–</div></div>
-      <div class="metric"><div class="label">Capital à 90&nbsp;ans (Prudent)</div><div class="value" id="m-final-p">–</div></div>
-      <div class="metric status">
-        <div class="label" style="margin:0">Scénario Prudent</div>
-        <div class="status-pill" id="status-pill">–</div>
-      </div>
-    </div>
-  </section>
-
-  <section id="budget-section">
-    <h2>Budget mensuel à une date</h2>
-    <select class="date-select" id="budget-date"></select>
-    <table class="budget-table" id="budget-table">
-      <thead><tr><th>Poste</th><th>Central</th><th>Prudent</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <section id="params-section">
-    <h2>Paramètres</h2>
-
-    <details open>
-      <summary>Départ &amp; horizon</summary>
-      <div class="field-grid">
-        <div class="field"><label>Date de départ</label><input type="month" id="p-depart" value="2033-12"></div>
-        <div class="field"><label>Date de naissance</label><input type="date" id="p-naissance" value="1977-02-04"></div>
-        <div class="field"><label>Mois chez les parents</label><input type="number" id="p-dureeParents" value="12"></div>
-        <div class="field"><label>Horizon (mois de simulation)</label><input type="number" id="p-horizon" value="420"></div>
-      </div>
-    </details>
-
-    <details>
-      <summary>Vente du bien &amp; crédit</summary>
-      <div class="field-grid">
-        <div class="field"><label>Prix de vente net (€)</label><input type="number" id="p-prixVente" value="345000"></div>
-        <div class="field"><label>Solde restant dû au départ (€)</label><input type="number" id="p-soldeHypo" value="155995"></div>
-        <div class="field"><label>Taux annuel du crédit</label><input type="number" step="0.0001" id="p-tauxCredit" value="0.0344"></div>
-        <div class="field"><label>Frais d'agence (%)</label><input type="number" step="0.0001" id="p-fraisAgence" value="0.0363"></div>
-        <div class="field"><label>Indemnité de remploi (mois)</label><input type="number" id="p-indemniteMois" value="3"></div>
-        <div class="field"><label>Mainlevée (€)</label><input type="number" id="p-mainlevee" value="729"></div>
-      </div>
-    </details>
-
-    <details>
-      <summary>Épargne &amp; installation</summary>
-      <div class="field-grid">
-        <div class="field"><label>Épargne au départ (€)</label><input type="number" id="p-epargne" value="110000"></div>
-        <div class="field"><label>Taux EUR / MAD</label><input type="number" step="0.01" id="p-eurMad" value="10.5"></div>
-        <div class="field"><label>Voiture (DH)</label><input type="number" id="p-voitureDH" value="200000"></div>
-        <div class="field"><label>Équipement base 2026 (DH)</label><input type="number" id="p-equipDH" value="28500"></div>
-        <div class="field full"><label>Équipement différé à l'emménagement</label>
-          <select id="p-equipDiffere"><option value="true" selected>Oui</option><option value="false">Non</option></select>
+  <head>
+    <meta charset="UTF-8" />
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=ai-legible&utm_source=comment&utm_medium=referral&utm_id=0ef7d443-b086-4824-8dcb-f2da2e7231f9
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<meta name="hosting-provider" content="Netlify">
+<meta name="netlify-deploy" content="https://netlify.new/?utm_campaign=ai-legible&amp;utm_source=meta&amp;utm_medium=referral&utm_id=0ef7d443-b086-4824-8dcb-f2da2e7231f9">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Pont Atlas</title>
+    <meta
+      name="description"
+      content="Simulation de retraite anticipée Belgique → Maroc. Capital-pont, scénarios Central et Prudent."
+    />
+    <meta name="theme-color" content="#2F5D50" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Pont Atlas" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,650&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #f3eee4;
+        --bg-warm: #ebe4d6;
+        --surface: #faf7f1;
+        --surface-2: #fffdf8;
+        --ink: #1a1814;
+        --ink-muted: #6b6458;
+        --ink-subtle: #8a8276;
+        --line: #ddd4c6;
+        --cedar: #2f5d50;
+        --cedar-fg: #f4efe6;
+        --slate: #4a6670;
+        --danger: #9b3d32;
+        --ok-bg: #e7efe7;
+        --radius: 12px;
+        --font: "Figtree", system-ui, sans-serif;
+        --display: "Fraunces", Georgia, serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+      }
+      button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
+      h1, h2, h3, .display { font-family: var(--display); text-wrap: balance; }
+      .wrap { max-width: 80rem; margin: 0 auto; padding: 0 1rem; }
+      @media (min-width: 640px) { .wrap { padding: 0 1.5rem; } }
+      header {
+        border-bottom: 1px solid var(--line);
+        background: color-mix(in srgb, var(--surface) 80%, transparent);
+        backdrop-filter: blur(8px);
+        position: sticky; top: 0; z-index: 20;
+      }
+      header .inner {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 0.75rem; padding: 1rem 0;
+      }
+      .brand { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+      .mark {
+        flex: none; width: 2.75rem; height: 2.75rem; border-radius: 0.5rem;
+        background: var(--cedar); color: var(--cedar-fg);
+        display: grid; place-items: center;
+      }
+      .mark svg { width: 1.75rem; height: 1.75rem; }
+      .brand h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+      @media (min-width: 640px) { .brand h1 { font-size: 1.5rem; } }
+      .sub { margin: 0.25rem 0 0; font-size: 0.75rem; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      @media (min-width: 640px) { .sub { font-size: 0.875rem; } }
+      .btn {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        height: 2.25rem; padding: 0 0.8rem; border-radius: 0.5rem;
+        border: 1px solid var(--line); background: var(--surface-2);
+        color: var(--ink); font: 500 0.875rem var(--font);
+      }
+      .btn:hover { background: var(--bg-warm); }
+      .btn-cedar { background: var(--cedar); color: var(--cedar-fg); border-color: transparent; }
+      .btn-cedar:hover { filter: brightness(1.08); }
+      main.grid {
+        display: grid; gap: 1.5rem; padding: 1.5rem 0 3rem;
+      }
+      @media (min-width: 1024px) {
+        main.grid { grid-template-columns: minmax(0, 1fr) 22rem; align-items: start; }
+        .params-btn { display: none; }
+      }
+      .stack { display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
+      .card {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: var(--radius); overflow: hidden;
+      }
+      .card-h { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 1rem 1rem 0; }
+      .card-h h2 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+      .card-b { padding: 1rem; }
+      .kpis-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.5rem; }
+      .kpis-head h2 { margin: 0; font-size: 1.125rem; }
+      .badge {
+        font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.65rem;
+        border-radius: 999px; background: var(--ok-bg); color: var(--cedar);
+      }
+      .badge.risk { background: #f5e4e0; color: var(--danger); }
+      .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+      @media (min-width: 1024px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
+      .kpi { background: color-mix(in srgb, var(--bg-warm) 60%, transparent); border-radius: 0.5rem; padding: 0.75rem 1rem; }
+      .kpi .lbl { font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted); }
+      .kpi .c { margin: 0.15rem 0 0; font-family: var(--display); font-size: 1.25rem; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+      @media (min-width: 640px) { .kpi .c { font-size: 1.5rem; } }
+      .kpi .p { margin: 0.15rem 0 0; font-size: 0.875rem; color: var(--slate); font-variant-numeric: tabular-nums; }
+      .neg { color: var(--danger); }
+      .hint { font-size: 0.75rem; color: var(--ink-subtle); line-height: 1.45; margin: 0.75rem 0 0; }
+      .legend { display: none; align-items: center; gap: 1rem; font-size: 0.6875rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted); }
+      @media (min-width: 640px) { .legend { display: flex; } }
+      .legend i { width: 0.5rem; height: 0.5rem; border-radius: 99px; display: inline-block; }
+      .tabs { display: flex; gap: 0.25rem; background: var(--bg-warm); padding: 0.25rem; border-radius: 0.5rem; }
+      .tabs button {
+        flex: 1; height: 2.5rem; border: 0; border-radius: 0.4rem;
+        background: transparent; color: var(--ink-muted); font: 500 0.875rem var(--font);
+      }
+      .tabs button.on { background: var(--surface-2); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / 6%); }
+      .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+      .chip {
+        height: 2.25rem; padding: 0 0.75rem; border: 0; border-radius: 999px;
+        background: var(--bg-warm); color: var(--ink-muted); font: 500 0.75rem var(--font);
+      }
+      .chip.on { background: var(--cedar); color: var(--cedar-fg); }
+      input[type="range"] { width: 100%; accent-color: var(--cedar); }
+      table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+      th, td { padding: 0.5rem 0.75rem; text-align: right; font-variant-numeric: tabular-nums; border-bottom: 1px solid var(--line); }
+      th:first-child, td:first-child { text-align: left; }
+      thead th { background: var(--bg-warm); font-size: 0.6875rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted); font-weight: 500; text-align: right; }
+      thead th:first-child { text-align: left; }
+      .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 0.5rem; }
+      .row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; padding: 0.4rem 0; font-size: 0.875rem; }
+      .row span:first-child { color: var(--ink-muted); }
+      .row .num { font-variant-numeric: tabular-nums; }
+      .muted { color: var(--ink-subtle); }
+      .pont-grid { display: grid; gap: 1.5rem; }
+      @media (min-width: 640px) { .pont-grid { grid-template-columns: 1fr 1fr; } }
+      .sec-title { margin: 0 0 0.5rem; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cedar); }
+      aside.panel {
+        display: none; position: sticky; top: 5rem; max-height: calc(100dvh - 6rem); overflow: auto;
+      }
+      @media (min-width: 1024px) { aside.panel { display: block; } }
+      .sheet {
+        display: none; position: fixed; inset: 0; z-index: 40;
+        background: rgb(26 24 20 / 40%);
+      }
+      .sheet.on { display: block; }
+      .sheet .inner {
+        position: absolute; right: 0; top: 0; bottom: 0; width: min(22rem, 100%);
+        background: var(--surface); overflow: auto; padding: 1rem 1rem 2rem;
+        box-shadow: -8px 0 24px rgb(0 0 0 / 8%);
+      }
+      .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem 0.8rem; }
+      .field { display: flex; flex-direction: column; gap: 0.3rem; }
+      .field.full { grid-column: 1 / -1; }
+      .field label { font-size: 0.75rem; font-weight: 500; color: var(--ink-muted); }
+      .field .tiny { font-size: 0.6875rem; color: var(--ink-subtle); }
+      .field input, .field select {
+        font: 400 0.88rem/1.2 var(--font); padding: 0.45rem 0.55rem;
+        border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); width: 100%;
+      }
+      .field input:focus, .field select:focus { outline: 2px solid color-mix(in srgb, var(--cedar) 45%, transparent); outline-offset: 1px; }
+      .section { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.25rem; }
+      .section h3 { margin: 0; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cedar); }
+      hr { border: 0; border-top: 1px solid var(--line); margin: 0 0 1.25rem; }
+      #chart { width: 100%; height: 280px; display: block; }
+      @media (min-width: 640px) { #chart { height: 340px; } }
+      .install {
+        display: none; align-items: center; justify-content: space-between; gap: 0.75rem;
+        margin: 0.75rem 0 0; padding: 0.7rem 0.85rem; border-radius: 0.5rem;
+        background: var(--cedar); color: var(--cedar-fg); font-size: 0.875rem;
+      }
+      .install.on { display: flex; }
+      .install button { border: 0; background: var(--cedar-fg); color: var(--cedar); border-radius: 999px; height: 2rem; padding: 0 0.8rem; font: 600 0.8rem var(--font); }
+      .tip {
+        position: absolute; pointer-events: none; z-index: 5;
+        background: var(--surface-2); border: 1px solid var(--line);
+        border-radius: 0.4rem; padding: 0.45rem 0.65rem; font-size: 0.75rem;
+        box-shadow: 0 4px 12px rgb(0 0 0 / 8%); display: none; min-width: 8rem;
+      }
+      .chart-wrap { position: relative; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap inner">
+        <div class="brand">
+          <span class="mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path d="M3 24C7.5 10 12 10 16 24C20 10 24.5 10 29 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </span>
+          <div class="minw">
+            <h1>Pont Atlas</h1>
+            <p class="sub" id="subtitle">Retraite anticipée · Belgique → Maroc</p>
+          </div>
         </div>
+        <button class="btn params-btn" type="button" id="open-params">Paramètres</button>
       </div>
-    </details>
-
-    <details>
-      <summary>Hypothèses macro — Central / Prudent</summary>
-      <div class="field-grid">
-        <div class="field"><label>Rendement placement — Central</label><input type="number" step="0.001" id="p-rendC" value="0.035"></div>
-        <div class="field"><label>Rendement placement — Prudent</label><input type="number" step="0.001" id="p-rendP" value="0.03"></div>
-        <div class="field"><label>Inflation coûts — Central</label><input type="number" step="0.001" id="p-inflC" value="0.02"></div>
-        <div class="field"><label>Inflation coûts — Prudent</label><input type="number" step="0.001" id="p-inflP" value="0.025"></div>
-        <div class="field"><label>Indexation loyers — Central</label><input type="number" step="0.001" id="p-idxLoyerC" value="0.02"></div>
-        <div class="field"><label>Indexation loyers — Prudent</label><input type="number" step="0.001" id="p-idxLoyerP" value="0.025"></div>
+    </header>
+    <div class="wrap">
+      <div class="install" id="install-bar">
+        <span>Installer Pont Atlas sur l’écran d’accueil</span>
+        <button type="button" id="install-btn">Ajouter</button>
       </div>
-    </details>
-
-    <details>
-      <summary>Budget mensuel base 2026</summary>
-      <div class="field-grid">
-        <div class="field"><label>Alimentation (€)</label><input type="number" id="p-alimentation" value="180"></div>
-        <div class="field"><label>Sorties/rencontres (€)</label><input type="number" id="p-sorties" value="280"></div>
-        <div class="field"><label>Voiture — usage (€)</label><input type="number" id="p-voitureUsage" value="150"></div>
-        <div class="field"><label>Escapades (€)</label><input type="number" id="p-escapades" value="45"></div>
-        <div class="field"><label>Vêtements (€)</label><input type="number" id="p-vetements" value="25"></div>
-        <div class="field"><label>Belgique (€)</label><input type="number" id="p-belgique" value="45"></div>
-        <div class="field"><label>Cadeaux (€)</label><input type="number" id="p-cadeaux" value="25"></div>
-        <div class="field"><label>Santé — base (€)</label><input type="number" id="p-santeBase" value="74"></div>
-        <div class="field"><label>Loyer Phase 2 (€)</label><input type="number" id="p-loyerP2" value="680"></div>
-        <div class="field"><label>Charges + Ménage Phase 2 (€)</label><input type="number" id="p-chargesP2" value="200"></div>
+      <main class="grid">
+        <div class="stack">
+          <section>
+            <div class="kpis-head">
+              <h2>Indicateurs clés</h2>
+              <span class="badge" id="viable">Viable</span>
+            </div>
+            <div class="kpi-grid" id="kpis"></div>
+            <p class="hint">Un scénario est viable si le capital ne descend jamais sous zéro. Central en vert cèdre, prudent en ardoise.</p>
+          </section>
+          <section class="card">
+            <div class="card-h">
+              <h2>Évolution du capital</h2>
+              <div class="legend">
+                <span><i style="background:var(--cedar)"></i> Central</span>
+                <span><i style="background:var(--slate)"></i> Prudent</span>
+              </div>
+            </div>
+            <div class="card-b chart-wrap">
+              <canvas id="chart"></canvas>
+              <div class="tip" id="tip"></div>
+            </div>
+          </section>
+          <section class="card">
+            <div class="card-h">
+              <div class="tabs">
+                <button type="button" class="on" data-tab="budget">Budget mensuel</button>
+                <button type="button" data-tab="pont">Capital-pont</button>
+              </div>
+            </div>
+            <div class="card-b" id="tab-budget"></div>
+            <div class="card-b" id="tab-pont" hidden></div>
+          </section>
+        </div>
+        <aside class="panel">
+          <section class="card">
+            <div class="card-h"><h2>Paramètres</h2></div>
+            <div class="card-b">
+              <p class="hint" style="margin-top:0">Cellules bleues de l’onglet Paramètres — tout se recalcule à la volée. Stocké sur cet appareil uniquement.</p>
+              <div class="params-root"></div>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+    <div class="sheet" id="sheet">
+      <div class="inner">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <h2 class="display" style="margin:0;font-size:1.1rem">Paramètres</h2>
+          <button class="btn" type="button" id="close-params">Fermer</button>
+        </div>
+        <div class="params-root"></div>
       </div>
-    </details>
-
-    <details>
-      <summary>Santé (multiplicateur par âge) &amp; réduction sociale</summary>
-      <div class="field-grid">
-        <div class="field"><label>x Santé à 65 ans</label><input type="number" step="0.01" id="p-santeMult1" value="1.15"></div>
-        <div class="field"><label>x Santé à 75 ans</label><input type="number" step="0.01" id="p-santeMult2" value="1.5"></div>
-        <div class="field"><label>x Santé à 85 ans</label><input type="number" step="0.01" id="p-santeMult3" value="2.0"></div>
-        <div class="field"><label>Âge réduction sorties/escapades</label><input type="number" id="p-ageReduction" value="80"></div>
-        <div class="field full"><label>Facteur (0.5 = -50%)</label><input type="number" step="0.01" id="p-reductionSociale" value="0.5"></div>
-      </div>
-    </details>
-
-    <details>
-      <summary>Bien locatif secondaire</summary>
-      <div class="field-grid">
-        <div class="field"><label>Loyer brut base 2026 (DH)</label><input type="number" id="p-temaraDH" value="3500"></div>
-        <div class="field"><label>Fraction louée en Phase 2</label><input type="number" step="0.01" id="p-temaraFraction" value="0.75"></div>
-        <div class="field"><label>Syndic base 2026 (DH/mois)</label><input type="number" id="p-temaraSyndic" value="100"></div>
-        <div class="field"><label>Taxe base 2026 (DH/an)</label><input type="number" id="p-temaraTaxe" value="2000"></div>
-      </div>
-    </details>
-
-    <details>
-      <summary>Pension légale</summary>
-      <div class="field-grid">
-        <div class="field"><label>Brut base 2026, réel (€/mois)</label><input type="number" id="p-pensionBrut" value="2250"></div>
-        <div class="field"><label>Précompte non-résident (%)</label><input type="number" step="0.0001" id="p-precompte" value="0.1111"></div>
-        <div class="field"><label>Indexation belge pré-liquidation</label><input type="number" step="0.001" id="p-idxBelge" value="0.02"></div>
-        <div class="field full"><label>Date de liquidation (pension + 2e pilier)</label><input type="month" id="p-liquidation" value="2044-02"></div>
-      </div>
-    </details>
-
-    <details>
-      <summary>Pension complémentaire (2e pilier)</summary>
-      <div class="field-grid">
-        <div class="field"><label>Réserve initiale (€)</label><input type="number" id="p-ethReserve" value="50166.01"></div>
-        <div class="field"><label>Prime annuelle (€)</label><input type="number" id="p-ethPrimeAn" value="5146.30"></div>
-        <div class="field"><label>Début des contributions</label><input type="month" id="p-ethDebut" value="2025-01"></div>
-        <div class="field"><label>Taux d'imposition départ anticipé</label><input type="number" step="0.001" id="p-ethTauxImpot" value="0.165"></div>
-        <div class="field full"><label>Prélèvements sociaux</label><input type="number" step="0.0001" id="p-ethPrelevSoc" value="0.0555"></div>
-      </div>
-    </details>
-
-  </section>
-
-</div>
-
-<footer>
-  <div class="wrap">
-    Simulation personnelle — capital = capital précédent × (1 + rendement/12) − coût net + pension, mois par mois, du départ à l'horizon fixé. Les deux scénarios (Central / Prudent) ne diffèrent que par les hypothèses macro ci-dessus. Outil privé, aucune donnée n'est envoyée nulle part — tout reste dans ce navigateur.
-  </div>
-</footer>
-
-<script>
-const STORAGE_KEY = 'pont-atlas:params:v1';
-
-function dumpParams() {
-  const out = {};
-  document.querySelectorAll('#params-section [id^="p-"]').forEach(el => { out[el.id] = el.value; });
-  return out;
-}
-
-function applyParams(obj) {
-  if (!obj || typeof obj !== 'object') return;
-  document.querySelectorAll('#params-section [id^="p-"]').forEach(el => {
-    if (Object.prototype.hasOwnProperty.call(obj, el.id)) el.value = obj[el.id];
-  });
-}
-
-function loadStoredParams() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw);
-    return data && typeof data.params === 'object' ? data.params : null;
-  } catch (e) {
-    return null;
-  }
-}
-
-function saveStoredParams() {
-  try {
-    const payload = {
-      app: 'pont-atlas',
-      version: 1,
-      savedAt: new Date().toISOString(),
-      storageKey: STORAGE_KEY,
-      params: dumpParams(),
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  } catch (e) {
-    /* stockage indisponible (navigation privée, quota) */
-  }
-}
-
-function setBackupStatus(msg) {
-  const el = document.getElementById('backup-status');
-  if (el) el.textContent = msg;
-}
-
-function buildExportPayload() {
-  const params = dumpParams();
-  const p = readParams();
-  const traceC = simulate(p, 'C');
-  const traceP = simulate(p, 'P');
-  const minP = Math.min(...traceP);
-  return {
-    app: 'pont-atlas',
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    storageKey: STORAGE_KEY,
-    params,
-    kpis: {
-      capitalDepart: Math.round(traceC[0]),
-      minCentral: Math.round(Math.min(...traceC)),
-      minPrudent: Math.round(minP),
-      finalCentral: Math.round(traceC[traceC.length - 1]),
-      finalPrudent: Math.round(traceP[traceP.length - 1]),
-      badge: minP >= 0 ? 'Viable' : 'Prudent à risque',
-    },
-  };
-}
-
-function exportJSON() {
-  const payload = buildExportPayload();
-  const text = JSON.stringify(payload, null, 2);
-
-  try {
-    const blob = new Blob([text], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `pont-atlas-export-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  } catch (e) {
-    setBackupStatus('Export : téléchargement indisponible sur ce navigateur.');
-    return;
-  }
-
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text)
-      .then(() => setBackupStatus('Exporté : téléchargé + copié dans le presse-papiers.'))
-      .catch(() => setBackupStatus('Exporté : téléchargé (copie presse-papiers refusée).'));
-  } else {
-    setBackupStatus('Exporté : téléchargé.');
-  }
-}
-
-function importJSONText(text) {
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch (e) {
-    setBackupStatus('Import échoué : JSON invalide.');
-    return;
-  }
-  if (!data || typeof data.params !== 'object') {
-    setBackupStatus('Import échoué : champ "params" manquant.');
-    return;
-  }
-  applyParams(data.params);
-  saveStoredParams();
-  render();
-  setBackupStatus('Import réussi.');
-}
-
-function midx(y, m) { return y * 12 + m; }
-function idxFn(base, rate, mfb) { return base * Math.pow(1 + rate, mfb / 12); }
-function monthLabel(t) {
-  const y = Math.floor((t - 1) / 12);
-  const m = t - y * 12;
-  return y + '-' + String(m).padStart(2, '0');
-}
-
-function readParams() {
-  const g = id => document.getElementById(id);
-  const [dy, dm] = g('p-depart').value.split('-').map(Number);
-  const [ny, nmo, nd] = g('p-naissance').value.split('-').map(Number);
-  const [ly, lm] = g('p-liquidation').value.split('-').map(Number);
-  const [ey, em] = g('p-ethDebut').value.split('-').map(Number);
-  return {
-    departY: dy, departM: dm,
-    naissanceY: ny, naissanceM: nmo,
-    dureeParents: +g('p-dureeParents').value,
-    horizonMois: +g('p-horizon').value,
-    prixVente: +g('p-prixVente').value,
-    soldeHypo: +g('p-soldeHypo').value,
-    tauxCredit: +g('p-tauxCredit').value,
-    fraisAgencePct: +g('p-fraisAgence').value,
-    indemniteMois: +g('p-indemniteMois').value,
-    mainlevee: +g('p-mainlevee').value,
-    epargne: +g('p-epargne').value,
-    eurMad: +g('p-eurMad').value,
-    voitureDH: +g('p-voitureDH').value,
-    equipDH: +g('p-equipDH').value,
-    equipDiffere: g('p-equipDiffere').value === 'true',
-    rendC: +g('p-rendC').value, rendP: +g('p-rendP').value,
-    inflC: +g('p-inflC').value, inflP: +g('p-inflP').value,
-    idxLoyerC: +g('p-idxLoyerC').value, idxLoyerP: +g('p-idxLoyerP').value,
-    alimentation: +g('p-alimentation').value,
-    sorties: +g('p-sorties').value,
-    voitureUsage: +g('p-voitureUsage').value,
-    escapades: +g('p-escapades').value,
-    vetements: +g('p-vetements').value,
-    belgique: +g('p-belgique').value,
-    cadeaux: +g('p-cadeaux').value,
-    santeBase: +g('p-santeBase').value,
-    loyerP2: +g('p-loyerP2').value,
-    chargesP2: +g('p-chargesP2').value,
-    santeMult1: +g('p-santeMult1').value,
-    santeMult2: +g('p-santeMult2').value,
-    santeMult3: +g('p-santeMult3').value,
-    ageReduction: +g('p-ageReduction').value,
-    reductionSociale: +g('p-reductionSociale').value,
-    temaraDH: +g('p-temaraDH').value,
-    temaraFractionP2: +g('p-temaraFraction').value,
-    temaraSyndic: +g('p-temaraSyndic').value,
-    temaraTaxeAn: +g('p-temaraTaxe').value,
-    pensionBrut: +g('p-pensionBrut').value,
-    precompte: +g('p-precompte').value,
-    idxBelge: +g('p-idxBelge').value,
-    liquidationY: ly, liquidationM: lm,
-    ethReserve: +g('p-ethReserve').value,
-    ethPrimeAn: +g('p-ethPrimeAn').value,
-    ethDebutY: ey, ethDebutM: em,
-    ethTauxImpot: +g('p-ethTauxImpot').value,
-    ethPrelevSoc: +g('p-ethPrelevSoc').value,
-  };
-}
-
-function computeCapitalPont(p) {
-  const netVente = p.prixVente - p.soldeHypo - p.prixVente * p.fraisAgencePct
-                   - p.soldeHypo * p.tauxCredit / 12 * p.indemniteMois - p.mainlevee;
-  const voitureEur = p.voitureDH / p.eurMad;
-  const equipEur = p.equipDiffere ? 0 : (p.equipDH / p.eurMad);
-  return netVente + p.epargne - voitureEur - equipEur;
-}
-
-function ethiasNet(p, rendement) {
-  const nContrib = midx(p.departY, p.departM) - midx(p.ethDebutY, p.ethDebutM);
-  const i = rendement / 12;
-  let reserve = p.ethReserve;
-  for (let k = 0; k < nContrib; k++) reserve = reserve * (1 + i) + p.ethPrimeAn / 12;
-  const nGel = midx(p.liquidationY, p.liquidationM) - midx(p.departY, p.departM);
-  for (let k = 0; k < nGel; k++) reserve = reserve * (1 + i);
-  return reserve * (1 - p.ethTauxImpot) * (1 - p.ethPrelevSoc);
-}
-
-function santeMultAt(t, p) {
-  if (t >= midx(p.naissanceY + 85, p.naissanceM)) return p.santeMult3;
-  if (t >= midx(p.naissanceY + 75, p.naissanceM)) return p.santeMult2;
-  if (t >= midx(p.naissanceY + 65, p.naissanceM)) return p.santeMult1;
-  return 1.0;
-}
-
-function monthlyBudget(p, t, scenario) {
-  const infl = scenario === 'C' ? p.inflC : p.inflP;
-  const idxLoyer = scenario === 'C' ? p.idxLoyerC : p.idxLoyerP;
-  const BASE = midx(2026, 1);
-  const mfb = t - BASE;
-  const A80 = midx(p.naissanceY + p.ageReduction, p.naissanceM);
-  const agdalIdx = midx(p.departY, p.departM) + p.dureeParents;
-  const fs = t >= A80 ? p.reductionSociale : 1.0;
-  const sm = santeMultAt(t, p);
-  const enPhase2 = t >= agdalIdx;
-
-  const lines = [
-    ['Alimentation', idxFn(p.alimentation, infl, mfb)],
-    ['Sorties/rencontres', idxFn(p.sorties, infl, mfb) * fs],
-    ['Voiture', idxFn(p.voitureUsage, infl, mfb)],
-    ['Escapades', idxFn(p.escapades, infl, mfb) * fs],
-    ['Santé', idxFn(p.santeBase, infl, mfb) * sm],
-    ['Vêtements', idxFn(p.vetements, infl, mfb)],
-    ['Belgique', idxFn(p.belgique, infl, mfb)],
-    ['Cadeaux', idxFn(p.cadeaux, infl, mfb)],
-  ];
-  if (enPhase2) {
-    lines.unshift(['Charges+Ménage', idxFn(p.chargesP2, infl, mfb)]);
-    lines.unshift(['Loyer', idxFn(p.loyerP2, idxLoyer, mfb)]);
-  }
-  return lines;
-}
-
-function simulate(p, scenario) {
-  const infl = scenario === 'C' ? p.inflC : p.inflP;
-  const rendement = scenario === 'C' ? p.rendC : p.rendP;
-  const idxLoyer = scenario === 'C' ? p.idxLoyerC : p.idxLoyerP;
-
-  const BASE = midx(2026, 1);
-  const depIdx = midx(p.departY, p.departM);
-  const agdalIdx = depIdx + p.dureeParents;
-  const liqIdx = midx(p.liquidationY, p.liquidationM);
-  const finIdx = depIdx + p.horizonMois;
-  const eth = ethiasNet(p, rendement);
-  const pensionNet2026 = p.pensionBrut * (1 - p.precompte);
-  const mfbLiq = liqIdx - BASE;
-  const pension2044 = idxFn(pensionNet2026, p.idxBelge, mfbLiq);
-  const A80 = midx(p.naissanceY + p.ageReduction, p.naissanceM);
-
-  let capital = computeCapitalPont(p);
-  const trace = [capital];
-  let t = depIdx;
-
-  while (t < finIdx) {
-    const mfb = t - BASE;
-    const fs = t >= A80 ? p.reductionSociale : 1.0;
-    const sm = santeMultAt(t, p);
-    const loyerTemaraBrut = idxFn(p.temaraDH, idxLoyer, mfb);
-    const chargesDH = idxFn(p.temaraSyndic, infl, mfb) + idxFn(p.temaraTaxeAn, infl, mfb) / 12;
-
-    let panier, revenu;
-    const enPhase2 = t >= agdalIdx;
-    if (!enPhase2) {
-      revenu = 0;
-      panier = idxFn(p.alimentation, infl, mfb) + idxFn(p.sorties, infl, mfb) * fs
-             + idxFn(p.voitureUsage, infl, mfb) + idxFn(p.escapades, infl, mfb) * fs
-             + idxFn(p.santeBase, infl, mfb) * sm + idxFn(p.vetements, infl, mfb)
-             + idxFn(p.belgique, infl, mfb) + idxFn(p.cadeaux, infl, mfb);
-    } else {
-      revenu = loyerTemaraBrut * p.temaraFractionP2;
-      panier = idxFn(p.loyerP2, idxLoyer, mfb) + idxFn(p.chargesP2, infl, mfb)
-             + idxFn(p.voitureUsage, infl, mfb) + idxFn(p.alimentation, infl, mfb)
-             + idxFn(p.santeBase, infl, mfb) * sm + idxFn(p.sorties, infl, mfb) * fs
-             + idxFn(p.escapades, infl, mfb) * fs + idxFn(p.vetements, infl, mfb)
-             + idxFn(p.belgique, infl, mfb) + idxFn(p.cadeaux, infl, mfb);
-    }
-    const temaraNet = (revenu - chargesDH) / p.eurMad;
-    const cout = panier - temaraNet;
-    const pension = t >= liqIdx ? idxFn(pension2044, infl, t - liqIdx) : 0;
-
-    capital = capital * (1 + rendement / 12) - cout + pension;
-    if (t === agdalIdx && p.equipDiffere) {
-      capital -= idxFn(p.equipDH, infl, mfb) / p.eurMad;
-    }
-    if (t === liqIdx) capital += eth;
-
-    trace.push(capital);
-    t++;
-  }
-  return trace;
-}
-
-function fmtEur(v) {
-  return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(v)) + ' €';
-}
-
-function drawChart(traceC, traceP) {
-  const svg = document.getElementById('chart');
-  const W = 600, H = 300, padL = 46, padR = 10, padT = 10, padB = 22;
-  const n = traceC.length;
-  const all = traceC.concat(traceP);
-  let min = Math.min(0, ...all), max = Math.max(...all);
-  const span = max - min || 1;
-  min -= span * 0.06; max += span * 0.08;
-
-  const x = i => padL + (i / (n - 1)) * (W - padL - padR);
-  const y = v => padT + (1 - (v - min) / (max - min)) * (H - padT - padB);
-
-  function path(trace) {
-    return trace.map((v, i) => (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
-  }
-
-  let svgContent = '';
-  // zero line
-  svgContent += `<line class="zero-line" x1="${padL}" y1="${y(0).toFixed(1)}" x2="${W-padR}" y2="${y(0).toFixed(1)}"/>`;
-  svgContent += `<text class="axis-label" x="${padL-4}" y="${y(0)+3}" text-anchor="end">0</text>`;
-  svgContent += `<text class="axis-label" x="${padL-4}" y="${y(max*0.95)+3}" text-anchor="end">${Math.round(max/1000)}k</text>`;
-  // year ticks every 5 years
-  for (let yr = 0; yr*60 < n; yr += 5) {
-    const i = yr * 12;
-    if (i >= n) break;
-    svgContent += `<text class="axis-label" x="${x(i).toFixed(1)}" y="${H-6}" text-anchor="middle">+${yr}a</text>`;
-  }
-  svgContent += `<path d="${path(traceP)}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
-  svgContent += `<path d="${path(traceC)}" fill="none" stroke="var(--primary)" stroke-width="2.3"/>`;
-  svg.innerHTML = svgContent;
-}
-
-function populateBudgetDates(p) {
-  const sel = document.getElementById('budget-date');
-  sel.innerHTML = '';
-  const depIdx = midx(p.departY, p.departM);
-  const offsets = [0, 12, 24, 60, 120, 180, 240];
-  offsets.forEach(off => {
-    if (off > p.horizonMois) return;
-    const t = depIdx + off;
-    const opt = document.createElement('option');
-    opt.value = t;
-    opt.textContent = (off === 0 ? "Au départ" : "+" + Math.round(off/12) + " ans") + " (" + monthLabel(t) + ")";
-    sel.appendChild(opt);
-  });
-}
-
-function renderBudgetTable(p) {
-  const t = +document.getElementById('budget-date').value;
-  const linesC = monthlyBudget(p, t, 'C');
-  const linesP = monthlyBudget(p, t, 'P');
-  const tbody = document.querySelector('#budget-table tbody');
-  tbody.innerHTML = '';
-  let totC = 0, totP = 0;
-  linesC.forEach((lc, i) => {
-    const lp = linesP[i];
-    totC += lc[1]; totP += lp[1];
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${lc[0]}</td><td>${fmtEur(lc[1])}</td><td>${fmtEur(lp[1])}</td>`;
-    tbody.appendChild(tr);
-  });
-  const trTot = document.createElement('tr');
-  trTot.style.fontWeight = '600';
-  trTot.innerHTML = `<td>Total brut</td><td>${fmtEur(totC)}</td><td>${fmtEur(totP)}</td>`;
-  tbody.appendChild(trTot);
-}
-
-function render() {
-  const p = readParams();
-  const traceC = simulate(p, 'C');
-  const traceP = simulate(p, 'P');
-  drawChart(traceC, traceP);
-
-  document.getElementById('m-depart').textContent = fmtEur(traceC[0]);
-  const minP = Math.min(...traceP);
-  document.getElementById('m-min').textContent = fmtEur(minP);
-  document.getElementById('m-final-c').textContent = fmtEur(traceC[traceC.length - 1]);
-  document.getElementById('m-final-p').textContent = fmtEur(traceP[traceP.length - 1]);
-
-  const pill = document.getElementById('status-pill');
-  if (minP >= 0) {
-    pill.textContent = 'Viable';
-    pill.className = 'status-pill ok';
-  } else {
-    pill.textContent = 'À risque';
-    pill.className = 'status-pill risk';
-  }
-
-  populateBudgetDates(p);
-  renderBudgetTable(p);
-}
-
-const storedOnLoad = loadStoredParams();
-if (storedOnLoad) applyParams(storedOnLoad);
-
-document.addEventListener('input', () => { render(); saveStoredParams(); });
-document.getElementById('budget-date').addEventListener('change', () => renderBudgetTable(readParams()));
-
-document.getElementById('btn-export').addEventListener('click', exportJSON);
-document.getElementById('btn-import').addEventListener('click', () => document.getElementById('import-file').click());
-document.getElementById('import-file').addEventListener('change', (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => importJSONText(String(reader.result));
-  reader.readAsText(file);
-  e.target.value = '';
-});
-
-render();
-</script>
-</body>
+    </div>
+    <script src="./engine.js?v=7"></script>
+    <script src="./app.js?v=7"></script>
+  </body>
 </html>
