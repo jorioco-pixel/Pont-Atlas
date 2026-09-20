@@ -1,7 +1,18 @@
 # Pont Atlas
 
-Simulation retraite anticipée Belgique → Maroc.
+Simulation de retraite anticipée Belgique → Maroc.
 
-Pension légale : indexation belge sur le **brut**, puis précompte non-résident.
+- App canonique : https://pont-atlas.netlify.app/
+- Repo : ce dossier (mêmes fichiers que Netlify)
+- Params locaux : `localStorage` clé `pont-atlas:params:v1` (par appareil)
 
-Site : https://pont-atlas.netlify.app/
+## Fichiers
+
+- `index.html` — UI
+- `app.js` — interface, export JSON, PWA install
+- `engine.js` — moteur
+- `manifest.json` + icônes — install écran d’accueil
+
+## Export
+
+Paramètres → **Exporter JSON** : télécharge le plan et le copie dans le presse-papiers.
