@@ -146,17 +146,6 @@
   .budget-table thead th{color:var(--ink-soft);font-weight:600;font-size:.76rem;}
   .date-select{margin-bottom:.7rem;}
 
-  .backup-row{display:flex;gap:.6rem;flex-wrap:wrap;}
-  .btn{
-    font-family:'IBM Plex Sans',sans-serif;
-    font-size:.86rem;font-weight:600;
-    padding:.55rem 1rem;border-radius:8px;
-    border:1px solid var(--primary);
-    background:var(--primary);color:#fff;cursor:pointer;
-  }
-  .btn-secondary{background:var(--paper-raised);color:var(--primary);}
-  .backup-status{margin-top:.5rem;font-size:.78rem;color:var(--ink-soft);min-height:1.1em;}
-
   footer{
     padding:1.5rem 1.1rem 0;
     font-size:.76rem;
@@ -175,15 +164,6 @@
 </header>
 
 <div class="wrap">
-
-  <section id="backup-section">
-    <div class="backup-row">
-      <button type="button" id="btn-export" class="btn">Exporter JSON</button>
-      <button type="button" id="btn-import" class="btn btn-secondary">Importer JSON</button>
-      <input type="file" id="import-file" accept="application/json" style="display:none">
-    </div>
-    <div class="backup-status" id="backup-status"></div>
-  </section>
 
   <section id="chart-section">
     <div class="chart-card">
@@ -259,11 +239,11 @@
     <details>
       <summary>Hypothèses macro — Central / Prudent</summary>
       <div class="field-grid">
-        <div class="field"><label>Rendement placement — Central</label><input type="number" step="0.001" id="p-rendC" value="0.035"></div>
+        <div class="field"><label>Rendement placement — Central</label><input type="number" step="0.001" id="p-rendC" value="0.03"></div>
         <div class="field"><label>Rendement placement — Prudent</label><input type="number" step="0.001" id="p-rendP" value="0.03"></div>
         <div class="field"><label>Inflation coûts — Central</label><input type="number" step="0.001" id="p-inflC" value="0.02"></div>
-        <div class="field"><label>Inflation coûts — Prudent</label><input type="number" step="0.001" id="p-inflP" value="0.025"></div>
-        <div class="field"><label>Indexation loyers — Central</label><input type="number" step="0.001" id="p-idxLoyerC" value="0.02"></div>
+        <div class="field"><label>Inflation coûts — Prudent</label><input type="number" step="0.001" id="p-inflP" value="0.03"></div>
+        <div class="field"><label>Indexation loyers — Central</label><input type="number" step="0.001" id="p-idxLoyerC" value="0.025"></div>
         <div class="field"><label>Indexation loyers — Prudent</label><input type="number" step="0.001" id="p-idxLoyerP" value="0.025"></div>
       </div>
     </details>
@@ -271,16 +251,16 @@
     <details>
       <summary>Budget mensuel base 2026</summary>
       <div class="field-grid">
-        <div class="field"><label>Alimentation (€)</label><input type="number" id="p-alimentation" value="180"></div>
-        <div class="field"><label>Sorties/rencontres (€)</label><input type="number" id="p-sorties" value="280"></div>
-        <div class="field"><label>Voiture — usage (€)</label><input type="number" id="p-voitureUsage" value="150"></div>
-        <div class="field"><label>Escapades (€)</label><input type="number" id="p-escapades" value="45"></div>
-        <div class="field"><label>Vêtements (€)</label><input type="number" id="p-vetements" value="25"></div>
-        <div class="field"><label>Belgique (€)</label><input type="number" id="p-belgique" value="45"></div>
-        <div class="field"><label>Cadeaux (€)</label><input type="number" id="p-cadeaux" value="25"></div>
+        <div class="field"><label>Alimentation (€)</label><input type="number" id="p-alimentation" value="260"></div>
+        <div class="field"><label>Sorties/rencontres (€)</label><input type="number" id="p-sorties" value="250"></div>
+        <div class="field"><label>Voiture — usage (€)</label><input type="number" id="p-voitureUsage" value="285"></div>
+        <div class="field"><label>Escapades (€)</label><input type="number" id="p-escapades" value="106"></div>
+        <div class="field"><label>Vêtements (€)</label><input type="number" id="p-vetements" value="51"></div>
+        <div class="field"><label>Belgique (€)</label><input type="number" id="p-belgique" value="38"></div>
+        <div class="field"><label>Cadeaux (€)</label><input type="number" id="p-cadeaux" value="40"></div>
         <div class="field"><label>Santé — base (€)</label><input type="number" id="p-santeBase" value="74"></div>
-        <div class="field"><label>Loyer Phase 2 (€)</label><input type="number" id="p-loyerP2" value="680"></div>
-        <div class="field"><label>Charges + Ménage Phase 2 (€)</label><input type="number" id="p-chargesP2" value="200"></div>
+        <div class="field"><label>Loyer Phase 2 (€)</label><input type="number" id="p-loyerP2" value="714"></div>
+        <div class="field"><label>Charges + Ménage Phase 2 (€)</label><input type="number" id="p-chargesP2" value="143"></div>
       </div>
     </details>
 
@@ -337,121 +317,6 @@
 </footer>
 
 <script>
-const STORAGE_KEY = 'pont-atlas:params:v1';
-
-function dumpParams() {
-  const out = {};
-  document.querySelectorAll('#params-section [id^="p-"]').forEach(el => { out[el.id] = el.value; });
-  return out;
-}
-
-function applyParams(obj) {
-  if (!obj || typeof obj !== 'object') return;
-  document.querySelectorAll('#params-section [id^="p-"]').forEach(el => {
-    if (Object.prototype.hasOwnProperty.call(obj, el.id)) el.value = obj[el.id];
-  });
-}
-
-function loadStoredParams() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw);
-    return data && typeof data.params === 'object' ? data.params : null;
-  } catch (e) {
-    return null;
-  }
-}
-
-function saveStoredParams() {
-  try {
-    const payload = {
-      app: 'pont-atlas',
-      version: 1,
-      savedAt: new Date().toISOString(),
-      storageKey: STORAGE_KEY,
-      params: dumpParams(),
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  } catch (e) {
-    /* stockage indisponible (navigation privée, quota) */
-  }
-}
-
-function setBackupStatus(msg) {
-  const el = document.getElementById('backup-status');
-  if (el) el.textContent = msg;
-}
-
-function buildExportPayload() {
-  const params = dumpParams();
-  const p = readParams();
-  const traceC = simulate(p, 'C');
-  const traceP = simulate(p, 'P');
-  const minP = Math.min(...traceP);
-  return {
-    app: 'pont-atlas',
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    storageKey: STORAGE_KEY,
-    params,
-    kpis: {
-      capitalDepart: Math.round(traceC[0]),
-      minCentral: Math.round(Math.min(...traceC)),
-      minPrudent: Math.round(minP),
-      finalCentral: Math.round(traceC[traceC.length - 1]),
-      finalPrudent: Math.round(traceP[traceP.length - 1]),
-      badge: minP >= 0 ? 'Viable' : 'Prudent à risque',
-    },
-  };
-}
-
-function exportJSON() {
-  const payload = buildExportPayload();
-  const text = JSON.stringify(payload, null, 2);
-
-  try {
-    const blob = new Blob([text], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `pont-atlas-export-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  } catch (e) {
-    setBackupStatus('Export : téléchargement indisponible sur ce navigateur.');
-    return;
-  }
-
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text)
-      .then(() => setBackupStatus('Exporté : téléchargé + copié dans le presse-papiers.'))
-      .catch(() => setBackupStatus('Exporté : téléchargé (copie presse-papiers refusée).'));
-  } else {
-    setBackupStatus('Exporté : téléchargé.');
-  }
-}
-
-function importJSONText(text) {
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch (e) {
-    setBackupStatus('Import échoué : JSON invalide.');
-    return;
-  }
-  if (!data || typeof data.params !== 'object') {
-    setBackupStatus('Import échoué : champ "params" manquant.');
-    return;
-  }
-  applyParams(data.params);
-  saveStoredParams();
-  render();
-  setBackupStatus('Import réussi.');
-}
-
 function midx(y, m) { return y * 12 + m; }
 function idxFn(base, rate, mfb) { return base * Math.pow(1 + rate, mfb / 12); }
 function monthLabel(t) {
@@ -724,23 +589,8 @@ function render() {
   renderBudgetTable(p);
 }
 
-const storedOnLoad = loadStoredParams();
-if (storedOnLoad) applyParams(storedOnLoad);
-
-document.addEventListener('input', () => { render(); saveStoredParams(); });
+document.addEventListener('input', render);
 document.getElementById('budget-date').addEventListener('change', () => renderBudgetTable(readParams()));
-
-document.getElementById('btn-export').addEventListener('click', exportJSON);
-document.getElementById('btn-import').addEventListener('click', () => document.getElementById('import-file').click());
-document.getElementById('import-file').addEventListener('change', (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => importJSONText(String(reader.result));
-  reader.readAsText(file);
-  e.target.value = '';
-});
-
 render();
 </script>
 </body>
