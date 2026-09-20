@@ -1,18 +1,26 @@
 # Pont Atlas
 
-App canonique : https://pont-atlas.netlify.app/
+Simulation retraite anticipée Belgique → Maroc.
 
-**Attention :** l'état GitHub `main` n'est pas encore le bundle Netlify complet (`app.js` / vrai `engine.js`). L'app téléphone persiste via `localStorage` clé `pont-atlas:params:v1`.
+**App téléphone (canonique)** : https://pont-atlas.netlify.app/
 
-`index.html` à la racine est l'ancienne UI monofichier (moteur simplifié, sans vente/épargne/voiture DH/Ethias/pension conformes au vrai moteur Netlify). Une copie figée avant modification est conservée dans `archive/index.legacy.html`. En attendant le vrai `app.js`/`engine.js`, ce fichier a été complété avec :
+Persistance : `localStorage` clé `pont-atlas:params:v1`.
 
-- persistance `localStorage` sous la clé exacte `pont-atlas:params:v1` (mêmes ids `#p-*`)
-- bouton **Exporter JSON** (téléchargement + copie presse-papiers) : dump `{ app, version, exportedAt, storageKey, params, kpis }`
-- bouton **Importer JSON** : relit un export du même format, réapplique les champs et re-render
-- les 15 valeurs par défaut confirmées du plan téléphone (`confirmedFromScreens`, hors `nomPhase1`/`nomPhase2` qui n'ont pas de champ correspondant dans ce moteur) ont été mergées dans les `value=""` par défaut
+## Repo `main` (août/sept. 2026)
 
-Les champs vente/épargne/voiture DH/pension/Ethias restent ceux de l'ancien moteur — **non vérifiés**, ne pas les considérer comme fiables.
+Mêmes fichiers que Netlify :
 
-Plan téléphone : `pont-atlas-plan-telephone.json`
-Brief Claude : `PONT-ATLAS-CLAUDE.md`
-Instructions de reconstruction : `RECONSTRUCT.md`
+- `index.html` — shell v7
+- `app.js` — UI + bouton **Exporter JSON**
+- `engine.js` — moteur PontSim
+- `manifest.json`, `favicon.svg`
+
+Ancienne UI monofichier : `archive/index.legacy.html`.
+
+Plan téléphone observé : `pont-atlas-plan-telephone.json`.
+
+## Important
+
+- Ne pas lier Netlify à ce repo sans accord : un déploiement publie le bouton Exporter sur le téléphone mais ne doit pas reset le storage.
+- GitHub Pages peut rester en cache sur l’ancienne UI.
+- Le plan 217 k€ est sur le téléphone seulement.
