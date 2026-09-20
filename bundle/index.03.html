@@ -1,0 +1,54 @@
+5rem; padding: 0 0.75rem; border: 0; border-radius: 999px;
+        background: var(--bg-warm); color: var(--ink-muted); font: 500 0.75rem var(--font);
+      }
+      .chip.on { background: var(--cedar); color: var(--cedar-fg); }
+      input[type="range"] { width: 100%; accent-color: var(--cedar); }
+      table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+      th, td { padding: 0.5rem 0.75rem; text-align: right; font-variant-numeric: tabular-nums; border-bottom: 1px solid var(--line); }
+      th:first-child, td:first-child { text-align: left; }
+      thead th { background: var(--bg-warm); font-size: 0.6875rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted); font-weight: 500; text-align: right; }
+      thead th:first-child { text-align: left; }
+      .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 0.5rem; }
+      .row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; padding: 0.4rem 0; font-size: 0.875rem; }
+      .row span:first-child { color: var(--ink-muted); }
+      .row .num { font-variant-numeric: tabular-nums; }
+      .muted { color: var(--ink-subtle); }
+      .pont-grid { display: grid; gap: 1.5rem; }
+      @media (min-width: 640px) { .pont-grid { grid-template-columns: 1fr 1fr; } }
+      .sec-title { margin: 0 0 0.5rem; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cedar); }
+      aside.panel {
+        display: none; position: sticky; top: 5rem; max-height: calc(100dvh - 6rem); overflow: auto;
+      }
+      @media (min-width: 1024px) { aside.panel { display: block; } }
+      .sheet {
+        display: none; position: fixed; inset: 0; z-index: 40;
+        background: rgb(26 24 20 / 40%);
+      }
+      .sheet.on { display: block; }
+      .sheet .inner {
+        position: absolute; right: 0; top: 0; bottom: 0; width: min(22rem, 100%);
+        background: var(--surface); overflow: auto; padding: 1rem 1rem 2rem;
+        box-shadow: -8px 0 24px rgb(0 0 0 / 8%);
+      }
+      .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem 0.8rem; }
+      .field { display: flex; flex-direction: column; gap: 0.3rem; }
+      .field.full { grid-column: 1 / -1; }
+      .field label { font-size: 0.75rem; font-weight: 500; color: var(--ink-muted); }
+      .field .tiny { font-size: 0.6875rem; color: var(--ink-subtle); }
+      .field input, .field select {
+        font: 400 0.88rem/1.2 var(--font); padding: 0.45rem 0.55rem;
+        border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); width: 100%;
+      }
+      .field input:focus, .field select:focus { outline: 2px solid color-mix(in srgb, var(--cedar) 45%, transparent); outline-offset: 1px; }
+      .section { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.25rem; }
+      .section h3 { margin: 0; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cedar); }
+      hr { border: 0; border-top: 1px solid var(--line); margin: 0 0 1.25rem; }
+      #chart { width: 100%; height: 280px; display: block; }
+      @media (min-width: 640px) { #chart { height: 340px; } }
+      .install {
+        display: none; align-items: center; justify-content: space-between; gap: 0.75rem;
+        margin: 0.75rem 0 0; padding: 0.7rem 0.85rem; border-radius: 0.5rem;
+        background: var(--cedar); color: var(--cedar-fg); font-size: 0.875rem;
+      }
+      .install.on { display: flex; }
+      .install button { border: 0; background: var(--cedar-fg); col
