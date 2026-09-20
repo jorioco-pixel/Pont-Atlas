@@ -1,0 +1,20 @@
+{
+  "name": "Pont Atlas",
+  "short_name": "Pont Atlas",
+  "description": "Simulation de retraite anticipée Belgique → Maroc",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F3EEE4",
+  "theme_color": "#2F5D50",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
