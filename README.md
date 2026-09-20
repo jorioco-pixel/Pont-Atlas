@@ -1,18 +1,8 @@
 # Pont Atlas
 
-Simulation de retraite anticipée Belgique → Maroc.
+App canonique : https://pont-atlas.netlify.app/
 
-- App canonique : https://pont-atlas.netlify.app/
-- Repo : ce dossier (mêmes fichiers que Netlify)
-- Params locaux : `localStorage` clé `pont-atlas:params:v1` (par appareil)
+**Attention :** l'état GitHub `main` n'est pas encore le bundle Netlify complet (`app.js` / vrai `engine.js`). L'app téléphone persiste via `localStorage` clé `pont-atlas:params:v1`.
 
-## Fichiers
-
-- `index.html` — UI
-- `app.js` — interface, export JSON, PWA install
-- `engine.js` — moteur
-- `manifest.json` + icônes — install écran d’accueil
-
-## Export
-
-Paramètres → **Exporter JSON** : télécharge le plan et le copie dans le presse-papiers.
+Plan téléphone : `pont-atlas-plan-telephone.json`
+Brief Claude : `PONT-ATLAS-CLAUDE.md`
