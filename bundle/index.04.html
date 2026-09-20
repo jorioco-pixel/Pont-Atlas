@@ -1,0 +1,85 @@
+or: var(--cedar); border-radius: 999px; height: 2rem; padding: 0 0.8rem; font: 600 0.8rem var(--font); }
+      .tip {
+        position: absolute; pointer-events: none; z-index: 5;
+        background: var(--surface-2); border: 1px solid var(--line);
+        border-radius: 0.4rem; padding: 0.45rem 0.65rem; font-size: 0.75rem;
+        box-shadow: 0 4px 12px rgb(0 0 0 / 8%); display: none; min-width: 8rem;
+      }
+      .chart-wrap { position: relative; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap inner">
+        <div class="brand">
+          <span class="mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path d="M3 24C7.5 10 12 10 16 24C20 10 24.5 10 29 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </span>
+          <div class="minw">
+            <h1>Pont Atlas</h1>
+            <p class="sub" id="subtitle">Retraite anticipée · Belgique → Maroc</p>
+          </div>
+        </div>
+        <button class="btn params-btn" type="button" id="open-params">Paramètres</button>
+      </div>
+    </header>
+    <div class="wrap">
+      <div class="install" id="install-bar">
+        <span>Installer Pont Atlas sur l’écran d’accueil</span>
+        <button type="button" id="install-btn">Ajouter</button>
+      </div>
+      <main class="grid">
+        <div class="stack">
+          <section>
+            <div class="kpis-head">
+              <h2>Indicateurs clés</h2>
+              <span class="badge" id="viable">Viable</span>
+            </div>
+            <div class="kpi-grid" id="kpis"></div>
+            <p class="hint">Un scénario est viable si le capital ne descend jamais sous zéro. Central en vert cèdre, prudent en ardoise.</p>
+          </section>
+          <section class="card">
+            <div class="card-h">
+              <h2>Évolution du capital</h2>
+              <div class="legend">
+                <span><i style="background:var(--cedar)"></i> Central</span>
+                <span><i style="background:var(--slate)"></i> Prudent</span>
+              </div>
+            </div>
+            <div class="card-b chart-wrap">
+              <canvas id="chart"></canvas>
+              <div class="tip" id="tip"></div>
+            </div>
+          </section>
+          <section class="card">
+            <div class="card-h">
+              <div class="tabs">
+                <button type="button" class="on" data-tab="budget">Budget mensuel</button>
+                <button type="button" data-tab="pont">Capital-pont</button>
+              </div>
+            </div>
+            <div class="card-b" id="tab-budget"></div>
+            <div class="card-b" id="tab-pont" hidden></div>
+          </section>
+        </div>
+        <aside class="panel">
+          <section class="card">
+            <div class="card-h"><h2>Paramètres</h2></div>
+            <div class="card-b">
+              <p class="hint" style="margin-top:0">Cellules bleues de l’onglet Paramètres — tout se recalcule à la volée. Stocké sur cet appareil uniquement.</p>
+              <div class="params-root"></div>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+    <div class="sheet" id="sheet">
+      <div class="inner">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <h2 class="display" style="margin:0;font-size:1.1rem">Paramètres</h2>
+          <button class="btn" type="button" id="close-params">Fermer</button>
+        </div>
+        <div class="params-root"></div>
+      </div>
+    </div>
+    <script src="./engine.js?v=7"></sc
