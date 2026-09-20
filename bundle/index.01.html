@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=ai-legible&utm_source=comment&utm_medium=referral&utm_id=0ef7d443-b086-4824-8dcb-f2da2e7231f9
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<meta name="hosting-provider" content="Netlify">
+<meta name="netlify-deploy" content="https://netlify.new/?utm_campaign=ai-legible&amp;utm_source=meta&amp;utm_medium=referral&utm_id=0ef7d443-b086-4824-8dcb-f2da2e7231f9">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Pont Atlas</title>
+    <meta
+      name="description"
+      content="Simulation de retraite anticipée Belgique → Maroc. Capital-pont, scénarios Central et Prudent."
+    />
+    <meta name="theme-color" content="#2F5D50" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Pont Atlas" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,650&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #f3eee4;
+        --bg-warm: #ebe4d6;
+        --surface: #faf7f1;
+        --surface-2: #fffdf8;
+        --ink: #1a1814;
+        --ink-muted: #6b6458;
+        --ink-subtle: #8a8276;
+        --line: #ddd4c6;
+        --cedar: #2f5d50;
+        --cedar-fg: #f4efe6;
+        --slate: #4a6670;
+        --danger: #9b3d32;
+        --ok-bg: #e7efe7;
+        --radius: 12px;
+        --font: "Figtree", system-ui, sans-serif;
+        --display: "Fraunces", Georgia, serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+      }
+      button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
+      h1, h2, h3, .display { font-family: var(--display); text-wrap: balance; }
+      .wrap { max-width: 80rem; margin: 0 auto; padding: 0 1rem; }
+      @media (min-width: 640px) { .wrap { padding: 0 1.5rem; } }
+      header {
+        border-bottom: 1px solid var(--line);
+        background: color-mix(in srgb, var(--surface) 80%, transparent);
+        backdrop-filter: blur(8px);
+        position: sticky; top: 0; z-index: 20;
+      }
+      header .inner {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 0.75rem; padding: 1rem 0;
+      }
+      .brand { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+      .mark {
+        flex: none; width: 2.75rem; height: 2.75rem; border-radius: 0.5rem;
+        background: var(--cedar); color: var(--cedar-fg);
+        display: grid; place-items: center;
+      }
+      .mark svg { width: 1.75rem; height: 1.75rem; }
+      .brand h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+      @media (min-width: 640px) { 
